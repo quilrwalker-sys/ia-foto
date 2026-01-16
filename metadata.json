@@ -1,0 +1,5 @@
+{
+  "name": "ImagineAI - Gerador de Imagens",
+  "description": "Uma plataforma avançada de geração de imagens movida por IA, utilizando os modelos Gemini para transformar texto em obras de arte visuais deslumbrantes com suporte a diversos estilos e proporções.",
+  "requestFramePermissions": []
+}
