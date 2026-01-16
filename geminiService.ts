@@ -14,15 +14,21 @@ const STYLE_PROMPTS: Record<ImageStyle, string> = {
   [ImageStyle.SKETCH]: "pencil sketch, hand-drawn, charcoal, artistic, expressive lines",
 };
 
+const getAIClient = () => {
+  const apiKey = process.env.API_KEY || (window as any).process?.env?.API_KEY;
+  if (!apiKey) {
+    console.warn("API_KEY não encontrada no ambiente.");
+  }
+  return new GoogleGenAI({ apiKey: apiKey || "" });
+};
+
 export const generateAIImage = async (
   prompt: string,
   aspectRatio: AspectRatio,
   style: ImageStyle
 ): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  // Usando o modelo gemini-2.5-flash-image que não exige seleção manual de chave paga
+  const ai = getAIClient();
   const modelName = 'gemini-2.5-flash-image';
-  
   const enhancedPrompt = `${prompt}. ${STYLE_PROMPTS[style]}`;
   
   try {
@@ -34,7 +40,6 @@ export const generateAIImage = async (
       config: {
         imageConfig: {
           aspectRatio: aspectRatio
-          // imageSize removido pois não é suportado no 2.5-flash-image
         },
       },
     });
@@ -46,7 +51,7 @@ export const generateAIImage = async (
       }
     }
 
-    throw new Error("Nenhuma imagem foi gerada nas partes da resposta.");
+    throw new Error("Nenhuma imagem foi gerada.");
   } catch (error: any) {
     console.error("Erro na geração de imagem:", error);
     throw error;
@@ -54,13 +59,13 @@ export const generateAIImage = async (
 };
 
 export const generatePromptIdea = async (): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = getAIClient();
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: 'Sugira uma ideia criativa e detalhada para uma imagem AI. Responda apenas com o prompt em português, sem introduções ou explicações. Seja variado.',
+      contents: 'Sugira uma ideia criativa e detalhada para uma imagem AI. Responda apenas com o prompt em português, sem introduções ou explicações.',
       config: {
-        systemInstruction: 'Você é um assistente criativo. Responda apenas o texto do prompt em português do Brasil.',
+        systemInstruction: 'Você é um assistente criativo que gera prompts para IA em português do Brasil.',
         temperature: 1.0,
       },
     });
